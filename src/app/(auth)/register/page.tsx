@@ -1,24 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
-import { Wallet, User, Mail, Lock, Globe, ArrowRight } from 'lucide-react';
+import { Wallet, User, Mail, Lock, Globe, ArrowRight, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
+import { GoogleSignInButton } from '@/components/ui/GoogleSignInButton';
 import { CURRENCIES } from '@/lib/currencies';
 
 export default function RegisterPage() {
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [currency, setCurrency] = useState('PHP');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const err = searchParams.get('error');
+    if (err === 'google_not_configured') {
+      setError('Google OAuth is not configured yet. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,13 +80,24 @@ export default function RegisterPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
         <div className="bg-white dark:bg-slate-900 py-8 px-6 sm:px-8 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-xl shadow-slate-200/40 dark:shadow-none space-y-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-950/40 text-xs rounded-xl font-medium">
-                {error}
-              </div>
-            )}
+          {error && (
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-950/40 text-xs rounded-xl font-medium flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
 
+          {/* Google Sign-Up */}
+          <GoogleSignInButton text="Sign Up with Google" />
+
+          <div className="relative flex items-center justify-center my-2">
+            <div className="border-t border-slate-200 dark:border-slate-800 w-full" />
+            <span className="bg-white dark:bg-slate-900 px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider relative">
+              Or with email
+            </span>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Full Name"
               placeholder="e.g. Alex Rivera"

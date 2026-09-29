@@ -1,21 +1,34 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
-import { Wallet, Mail, Lock, Zap, ArrowRight } from 'lucide-react';
+import { Wallet, Mail, Lock, Zap, ArrowRight, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { GoogleSignInButton } from '@/components/ui/GoogleSignInButton';
 
 export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const err = searchParams.get('error');
+    if (err === 'google_not_configured') {
+      setError('Google OAuth is not configured yet. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your environment variables.');
+    } else if (err === 'oauth_denied') {
+      setError('Google Sign-In was cancelled or denied.');
+    } else if (err) {
+      setError('Failed to authenticate with Google. Please try again.');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,12 +102,22 @@ export default function LoginPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
-        <div className="bg-white dark:bg-slate-900 py-8 px-6 sm:px-8 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-xl shadow-slate-200/40 dark:shadow-none space-y-5">
+        <div className="bg-white dark:bg-slate-900 py-8 px-6 sm:px-8 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-xl shadow-slate-200/40 dark:shadow-none space-y-4">
+          {error && (
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-950/40 text-xs rounded-xl font-medium flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Google Sign-In */}
+          <GoogleSignInButton text="Sign In with Google" />
+
           {/* 1-Click Demo Login */}
           <Button
             type="button"
             variant="outline"
-            size="lg"
+            size="md"
             onClick={handleDemoLogin}
             isLoading={demoLoading}
             className="w-full border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 font-bold hover:bg-emerald-100/60"
@@ -103,20 +126,14 @@ export default function LoginPage() {
             1-Click Demo Account Sign In
           </Button>
 
-          <div className="relative flex items-center justify-center">
+          <div className="relative flex items-center justify-center my-2">
             <div className="border-t border-slate-200 dark:border-slate-800 w-full" />
             <span className="bg-white dark:bg-slate-900 px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider relative">
-              Or with credentials
+              Or with email
             </span>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-950/40 text-xs rounded-xl font-medium">
-                {error}
-              </div>
-            )}
-
             <Input
               type="email"
               label="Email Address"
