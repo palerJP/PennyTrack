@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
+import { DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +12,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const categories = await prisma.category.findMany({
+    let categories = await prisma.category.findMany({
       where: {
         OR: [
           { isDefault: true },
@@ -23,6 +24,35 @@ export async function GET(req: NextRequest) {
         { name: 'asc' }
       ]
     });
+
+    // Auto-seed default categories if empty in fresh database
+    if (categories.length === 0) {
+      const allDefaults = [...DEFAULT_EXPENSE_CATEGORIES, ...DEFAULT_INCOME_CATEGORIES];
+      for (const cat of allDefaults) {
+        await prisma.category.create({
+          data: {
+            name: cat.name,
+            icon: cat.icon,
+            color: cat.color,
+            type: cat.type,
+            isDefault: true,
+          }
+        }).catch(() => {});
+      }
+
+      categories = await prisma.category.findMany({
+        where: {
+          OR: [
+            { isDefault: true },
+            { userId: authUser.id }
+          ]
+        },
+        orderBy: [
+          { type: 'asc' },
+          { name: 'asc' }
+        ]
+      });
+    }
 
     return NextResponse.json({ categories });
   } catch (error) {
