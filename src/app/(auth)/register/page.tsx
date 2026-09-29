@@ -1,17 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
-import { Wallet, User, Mail, Lock, Globe, ArrowRight, AlertCircle } from 'lucide-react';
+import { Wallet, User, Mail, Lock, Globe, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { GoogleSignInButton } from '@/components/ui/GoogleSignInButton';
 import { CURRENCIES } from '@/lib/currencies';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const { login } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -156,5 +156,19 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+          <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+        </div>
+      }
+    >
+      <RegisterForm />
+    </Suspense>
   );
 }
