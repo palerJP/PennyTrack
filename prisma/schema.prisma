@@ -1,0 +1,115 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String                 @id @default(cuid())
+  name          String
+  email         String                 @unique
+  password      String
+  currency      String                 @default("PHP") // PHP (₱), USD ($), EUR (€), etc.
+  avatar        String?
+  theme         String                 @default("system") // light, dark, system
+  emailAlerts   Boolean                @default(true)
+  budgetAlerts  Boolean                @default(true)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  categories    Category[]
+  transactions  Transaction[]
+  budgets       Budget[]
+  recurring     RecurringTransaction[]
+  notifications Notification[]
+}
+
+model Category {
+  id          String                 @id @default(cuid())
+  name        String
+  type        String                 // "INCOME" or "EXPENSE"
+  icon        String                 @default("Tag")
+  color       String                 @default("#10b981")
+  isDefault   Boolean                @default(false)
+  userId      String?
+  user        User?                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime               @default(now())
+
+  transactions Transaction[]
+  budgets      Budget[]
+  recurring    RecurringTransaction[]
+
+  @@index([userId])
+}
+
+model Transaction {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  amount      Float
+  type        String    // "INCOME" or "EXPENSE"
+  date        DateTime  @default(now())
+  description String
+  notes       String?
+  tags        String?   // comma-separated tags e.g. "groceries,family"
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([date])
+  @@index([categoryId])
+}
+
+model Budget {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String?   // Nullable for general overall monthly budget, or specific to a category
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  amountLimit Float
+  month       String    // "YYYY-MM" e.g. "2026-09"
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, categoryId, month])
+  @@index([userId, month])
+}
+
+model RecurringTransaction {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId    String
+  category      Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  amount        Float
+  type          String    // "INCOME" or "EXPENSE"
+  frequency     String    // "WEEKLY", "MONTHLY", "YEARLY"
+  startDate     DateTime  @default(now())
+  nextDate      DateTime
+  description   String
+  isActive      Boolean   @default(true)
+  lastProcessed DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([nextDate])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   // "BUDGET_ALERT", "RECURRING_DUE", "INSIGHT", "SYSTEM"
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
