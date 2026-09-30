@@ -43,21 +43,21 @@ export function Header({ title, subtitle, onQuickAdd, actions }: HeaderProps) {
   };
 
   return (
-    <header className="h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20 transition-colors">
-      <div className="flex items-center gap-3 min-w-0">
-        <div>
-          <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate leading-none">
+    <header className="h-14 sm:h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-20 transition-colors">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 mr-2">
+        <div className="min-w-0">
+          <h1 className="text-sm sm:text-lg font-bold text-slate-900 dark:text-white truncate leading-tight">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 hidden sm:block">
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate hidden sm:block">
               {subtitle}
             </p>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         {/* Custom Actions passed from individual pages */}
         {actions}
 

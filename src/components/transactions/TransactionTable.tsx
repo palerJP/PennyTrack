@@ -50,8 +50,91 @@ export function TransactionTable({
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
-      <div className="overflow-x-auto">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-xs overflow-hidden">
+      {/* 1. Mobile Cards View (< sm) */}
+      <div className="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
+        {transactions.map((tx) => {
+          const isIncome = tx.type === 'INCOME';
+          return (
+            <div key={tx.id} className="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
+                    style={{
+                      backgroundColor: `${tx.category?.color || '#10b981'}20`,
+                      color: tx.category?.color || '#10b981',
+                    }}
+                  >
+                    <CategoryIcon name={tx.category?.icon || 'Tag'} size={18} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-xs text-slate-900 dark:text-white truncate">
+                      {tx.description}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-400">
+                      <span className="font-medium text-slate-600 dark:text-slate-300">{tx.category?.name || 'General'}</span>
+                      <span>•</span>
+                      <span>{formatDate(tx.date)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-right shrink-0">
+                  <span
+                    className={`font-black text-xs block ${
+                      isIncome
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-slate-900 dark:text-white'
+                    }`}
+                  >
+                    {isIncome ? '+' : '-'}
+                    {formatMoney(tx.amount)}
+                  </span>
+                  <div className="flex items-center justify-end gap-1.5 mt-1">
+                    <button
+                      onClick={() => onEdit(tx)}
+                      className="p-1 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                      title="Edit"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => onDelete(tx)}
+                      className="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {(tx.notes || tx.tags) && (
+                <div className="mt-2 pl-13 flex flex-wrap items-center gap-1.5 text-[10px]">
+                  {tx.notes && (
+                    <span className="text-slate-500 dark:text-slate-400 italic">
+                      "{tx.notes}"
+                    </span>
+                  )}
+                  {tx.tags &&
+                    tx.tags.split(',').map((tag, i) => (
+                      <span
+                        key={i}
+                        className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md font-mono text-[9px]"
+                      >
+                        #{tag.trim()}
+                      </span>
+                    ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 2. Desktop Full Table View (>= sm) */}
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-left text-xs sm:text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-100 dark:border-slate-800 uppercase text-[11px] tracking-wider">
             <tr>
@@ -183,12 +266,11 @@ export function TransactionTable({
 
       {/* Pagination Bar */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
-          <div>
-            Showing <span className="font-semibold">{transactions.length}</span> of{' '}
+        <div className="flex items-center justify-between px-3.5 sm:px-6 py-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+          <div className="truncate mr-2">
             <span className="font-semibold">{pagination.total}</span> records
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={() => onPageChange(pagination.page - 1)}
               disabled={pagination.page <= 1}
@@ -196,8 +278,8 @@ export function TransactionTable({
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="font-medium">
-              Page {pagination.page} of {pagination.totalPages}
+            <span className="font-medium text-[11px] sm:text-xs">
+              {pagination.page} / {pagination.totalPages}
             </span>
             <button
               onClick={() => onPageChange(pagination.page + 1)}

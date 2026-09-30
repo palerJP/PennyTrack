@@ -157,17 +157,17 @@ export default function RecurringPage() {
     }, 0);
 
   const headerActions = (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5 sm:gap-2">
       <Button
         onClick={handleProcessAllDue}
         size="sm"
         variant="outline"
         isLoading={isProcessingAll}
-        className="hidden sm:inline-flex items-center gap-1.5"
+        className="p-1.5 sm:px-3 sm:py-1.5 flex items-center gap-1.5 text-xs"
         title="Check and process due recurring transactions"
       >
-        <Zap className="w-4 h-4 text-amber-500" />
-        <span>Process Due</span>
+        <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
+        <span className="hidden sm:inline">Process Due</span>
       </Button>
 
       <Button
@@ -176,17 +176,17 @@ export default function RecurringPage() {
           setIsModalOpen(true);
         }}
         size="sm"
-        className="hidden sm:inline-flex items-center gap-1.5"
+        className="p-1.5 sm:px-3 sm:py-1.5 flex items-center gap-1.5 text-xs"
       >
-        <Plus className="w-4 h-4" />
-        <span>New Schedule</span>
+        <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+        <span className="hidden sm:inline">New Schedule</span>
       </Button>
     </div>
   );
 
   return (
     <AppLayout
-      title="Recurring Transactions & Bills"
+      title="Recurring Bills"
       subtitle="Automate repeating subscriptions, utility bills, and salary deposits"
       headerActions={headerActions}
     >

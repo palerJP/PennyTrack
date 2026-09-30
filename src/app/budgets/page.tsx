@@ -93,22 +93,22 @@ export default function BudgetsPage() {
   };
 
   const headerActions = (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300">
+    <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="flex items-center gap-0.5 sm:gap-1.5 bg-slate-100 dark:bg-slate-800 p-0.5 sm:p-1 rounded-xl text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300">
         <button
           onClick={() => changeMonth(-1)}
           className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition"
           title="Previous Month"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
-        <span className="px-2 whitespace-nowrap">{getMonthName(currentMonth)}</span>
+        <span className="px-1.5 sm:px-2 whitespace-nowrap">{getMonthName(currentMonth)}</span>
         <button
           onClick={() => changeMonth(1)}
           className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition"
           title="Next Month"
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
       </div>
 
@@ -134,7 +134,7 @@ export default function BudgetsPage() {
 
   return (
     <AppLayout
-      title="Budget Management"
+      title="Budgets"
       subtitle={`Configure monthly limits and monitor spending thresholds for ${getMonthName(currentMonth)}`}
       headerActions={headerActions}
     >
