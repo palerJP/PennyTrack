@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hashPassword, signToken } from '@/lib/auth';
-import { DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from '@/lib/constants';
+import { ensureDefaultAccountsAndCategories } from '@/lib/ensureSeed';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, password, currency = 'PHP' } = await req.json();
+    await ensureDefaultAccountsAndCategories();
+
+    const body = await req.json();
+    const name = body.name ? String(body.name).trim() : '';
+    const email = body.email ? String(body.email).toLowerCase().trim() : '';
+    const password = body.password ? String(body.password) : '';
+    const currency = body.currency || 'PHP';
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -21,44 +29,46 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const cleanEmail = email.toLowerCase().trim();
     const existing = await prisma.user.findUnique({
-      where: { email: cleanEmail },
+      where: { email },
     });
 
     if (existing) {
       return NextResponse.json(
-        { error: 'An account with this email already exists' },
+        { error: 'An account with this email already exists. Please log in.' },
         { status: 409 }
       );
     }
 
     const hashedPassword = await hashPassword(password);
+    const role = (email === 'admin@pennytrack.com' || email === 'palerjaphet@gmail.com') ? 'ADMIN' : 'USER';
 
     const user = await prisma.user.create({
       data: {
-        name: name.trim(),
-        email: cleanEmail,
+        name,
+        email,
         password: hashedPassword,
-        currency: currency || 'PHP',
+        role,
+        currency,
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`,
       },
     });
 
-    // Ensure default categories exist or create a welcome notification
+    // Welcome notification
     await prisma.notification.create({
       data: {
         userId: user.id,
         title: 'Welcome to PennyTrack! 🎉',
-        message: 'Get started by creating your first budget or recording your daily transactions.',
+        message: 'Your account is permanently created. Start tracking your budget and expenses right away.',
         type: 'SYSTEM',
       },
-    });
+    }).catch(() => {});
 
     const token = await signToken({
       id: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
     });
 
     const response = NextResponse.json(
@@ -69,6 +79,7 @@ export async function POST(req: NextRequest) {
           id: user.id,
           name: user.name,
           email: user.email,
+          role: user.role,
           currency: user.currency,
           avatar: user.avatar,
           theme: user.theme,
@@ -89,7 +100,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('Registration error:', error);
     return NextResponse.json(
-      { error: 'Failed to create account' },
+      { error: 'Failed to create account. Please try again.' },
       { status: 500 }
     );
   }

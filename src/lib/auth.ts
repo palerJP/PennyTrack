@@ -15,7 +15,14 @@ export async function comparePassword(password: string, hash: string): Promise<b
   return bcrypt.compare(password, hash);
 }
 
-export async function signToken(payload: { id: string; email: string; name: string }): Promise<string> {
+export interface AuthUserPayload extends Record<string, unknown> {
+  id: string;
+  email: string;
+  name: string;
+  role?: string;
+}
+
+export async function signToken(payload: AuthUserPayload): Promise<string> {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -23,16 +30,16 @@ export async function signToken(payload: { id: string; email: string; name: stri
     .sign(JWT_SECRET);
 }
 
-export async function verifyToken(token: string): Promise<{ id: string; email: string; name: string } | null> {
+export async function verifyToken(token: string): Promise<AuthUserPayload | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload as unknown as { id: string; email: string; name: string };
+    return payload as unknown as AuthUserPayload;
   } catch (err) {
     return null;
   }
 }
 
-export async function getUserFromRequest(req: NextRequest): Promise<{ id: string; email: string; name: string } | null> {
+export async function getUserFromRequest(req: NextRequest): Promise<AuthUserPayload | null> {
   // Try Authorization header first
   const authHeader = req.headers.get('authorization');
   if (authHeader && authHeader.startsWith('Bearer ')) {

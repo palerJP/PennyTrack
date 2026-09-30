@@ -4,6 +4,7 @@ export interface UserProfile {
   id: string;
   name: string;
   email: string;
+  role?: 'USER' | 'ADMIN' | string;
   currency: string;
   avatar?: string | null;
   theme: 'light' | 'dark' | 'system';

@@ -49,6 +49,39 @@ async function main() {
     }
   }
 
+  // Create Admin Users
+  const adminHashedPassword = await bcrypt.hash('admin123456', 10);
+  
+  const admins = [
+    { email: 'admin@pennytrack.com', name: 'PennyTrack Admin', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin' },
+    { email: 'palerjaphet@gmail.com', name: 'Japhet Paler', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Japhet' },
+  ];
+
+  for (const admin of admins) {
+    let existing = await prisma.user.findUnique({ where: { email: admin.email } });
+    if (!existing) {
+      await prisma.user.create({
+        data: {
+          name: admin.name,
+          email: admin.email,
+          password: adminHashedPassword,
+          role: 'ADMIN',
+          currency: 'PHP',
+          avatar: admin.avatar,
+          theme: 'system',
+          emailAlerts: true,
+          budgetAlerts: true,
+        }
+      });
+      console.log(`Created admin user: ${admin.email} / admin123456`);
+    } else {
+      await prisma.user.update({
+        where: { id: existing.id },
+        data: { role: 'ADMIN' },
+      });
+    }
+  }
+
   // Create Demo User
   const demoEmail = 'demo@pennytrack.com';
   let demoUser = await prisma.user.findUnique({
@@ -63,6 +96,7 @@ async function main() {
         name: 'Alex Rivera',
         email: demoEmail,
         password: hashedPassword,
+        role: 'USER',
         currency: 'PHP',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
         theme: 'light',

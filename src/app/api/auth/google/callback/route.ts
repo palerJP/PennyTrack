@@ -65,6 +65,8 @@ export async function GET(req: NextRequest) {
       where: { email },
     });
 
+    const role = (email === 'admin@pennytrack.com' || email === 'palerjaphet@gmail.com') ? 'ADMIN' : 'USER';
+
     if (!user) {
       // Create new user with secure random password for OAuth accounts
       const randomPassword = crypto.randomBytes(32).toString('hex');
@@ -75,6 +77,7 @@ export async function GET(req: NextRequest) {
           name,
           email,
           password: hashedPassword,
+          role,
           avatar,
           currency: 'PHP',
           theme: 'system',
@@ -90,12 +93,17 @@ export async function GET(req: NextRequest) {
           type: 'SYSTEM',
         },
       });
-    } else if (avatar && !user.avatar) {
-      // Update avatar if missing
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { avatar },
-      });
+    } else {
+      const updateData: any = {};
+      if (avatar && !user.avatar) updateData.avatar = avatar;
+      if (role === 'ADMIN' && user.role !== 'ADMIN') updateData.role = 'ADMIN';
+
+      if (Object.keys(updateData).length > 0) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: updateData,
+        });
+      }
     }
 
     // Generate JWT token
@@ -103,6 +111,7 @@ export async function GET(req: NextRequest) {
       id: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
     });
 
     const response = NextResponse.redirect(new URL('/dashboard', req.url));

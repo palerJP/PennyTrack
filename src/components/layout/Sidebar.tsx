@@ -16,6 +16,7 @@ import {
   Wallet,
   Sparkles,
   PlusCircle,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '@/lib/context/AuthContext';
 import { cn } from '@/lib/utils';
@@ -30,7 +31,7 @@ export function Sidebar({ onQuickAdd }: SidebarProps) {
   const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
-  const navItems = [
+  const baseNavItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Transactions', href: '/transactions', icon: ArrowLeftRight },
     { name: 'Budgets', href: '/budgets', icon: PieChart },
@@ -38,6 +39,10 @@ export function Sidebar({ onQuickAdd }: SidebarProps) {
     { name: 'Recurring', href: '/recurring', icon: CalendarClock },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
+
+  const navItems = user?.role === 'ADMIN'
+    ? [...baseNavItems, { name: 'Admin Panel', href: '/admin', icon: ShieldCheck }]
+    : baseNavItems;
 
   return (
     <aside
