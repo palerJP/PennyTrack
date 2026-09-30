@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  const googleClientId = process.env.GOOGLE_CLIENT_ID;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
+  const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim().replace(/^["']|["']$/g, '');
+  const rawAppUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
+  const appUrl = rawAppUrl.trim().replace(/^["']|["']$/g, '').replace(/\/$/, '');
   const redirectUri = `${appUrl}/api/auth/google/callback`;
 
   if (!googleClientId) {

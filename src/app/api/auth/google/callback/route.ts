@@ -15,9 +15,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL('/login?error=oauth_denied', req.url));
     }
 
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
+    const clientId = process.env.GOOGLE_CLIENT_ID?.trim().replace(/^["']|["']$/g, '');
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim().replace(/^["']|["']$/g, '');
+    const rawAppUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
+    const appUrl = rawAppUrl.trim().replace(/^["']|["']$/g, '').replace(/\/$/, '');
     const redirectUri = `${appUrl}/api/auth/google/callback`;
 
     if (!clientId || !clientSecret) {
